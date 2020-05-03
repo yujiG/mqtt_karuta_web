@@ -13,6 +13,8 @@ export default {
 <style lang="scss">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  color: $base;
+  font-size: 14px;
 }
 @import 'assets/scss/reset.scss';
 </style>
