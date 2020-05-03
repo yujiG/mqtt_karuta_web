@@ -3,7 +3,7 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import VueMqtt from 'vue-mqtt'
+import store from './vuex/store'
 
 Vue.use(VueMqtt, 'ws://127.0.0.1:3000', {clientId: 'WebClient-' + parseInt(Math.random() * 100000)})
 Vue.config.productionTip = false
@@ -11,6 +11,7 @@ Vue.config.productionTip = false
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  store,
   router,
   components: { App },
   template: '<App/>'
