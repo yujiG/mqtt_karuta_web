@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import TopPage from '@/components/TopPage'
+import GameUrl from '@/components/GameUrl'
 
 Vue.use(Router)
 
@@ -8,8 +8,9 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'TopPage',
-      component: TopPage
+      name: 'GameUrl',
+      component: GameUrl
+    },
     }
   ]
 })
