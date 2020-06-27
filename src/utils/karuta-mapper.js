@@ -6,10 +6,10 @@ export default class KarutaMapper {
     this.userIds = []
   }
   hitKaruta (karutaId, userId, timeStamp) {
+    if (!this.userIds.includes(userId)) this.userIds.push(userId)
     const karuta = this.karutas.find(v => v.karutaId === karutaId && !v.users.find(user => user.userId !== userId))
     if (!karuta) return
     karuta.users.push({ userId, timeStamp })
-    if (!this.userIds.includes(userId)) this.userIds.push(userId)
   }
   get usersInfo () {
     return this.userIds.map(id => {

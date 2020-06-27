@@ -3,6 +3,9 @@
     <p>ここにデータ表示</p>
     <div class="button" @click="hitKaruta">カルタGET</div>
     <div>現在のカルタID : {{ targetKarutaId }}</div>
+    <div v-for="(v, i) in karutaMapper.usersInfo" :key="i">
+      ユーザーID : {{ v.userId }}
+    </div>
   </div>
   <div v-else>ロード中だよ</div>
 </template>
@@ -32,6 +35,7 @@ export default {
         this.$mqtt.on('message', this.subscribeMessage)
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
         this.$mqtt.subscribe(this.targetKarutaMqttPath)
+        this.publishInitialize()
       })
     },
     hitKaruta () {
@@ -52,16 +56,15 @@ export default {
       if (!payload) return console.log('parse Error!') // TODO: ログ出力の内容を調整する
       switch (path) {
         case this.hitKarutaMqttPath:
-          this.hitKarutaFromMqtt(payload.karutaId, payload.userId, payload.timeStamp)
+          this.karutaMapper.hitKaruta(payload.karutaId, payload.userId, payload.timeStamp)
           break
         case this.targetKarutaMqttPath:
           this.targetKarutaId = payload.karutaId
           break
       }
     },
-    hitKarutaFromMqtt (karutaId, userId, timeStamp) {
-      if (karutaId !== this.targetKarutaId || !Number.isInteger(userId) || !Number.isInteger(timeStamp)) return
-      this.karutaMapper.hitKaruta(karutaId, userId, timeStamp)
+    publishInitialize () {
+      this.$mqtt.publish(this.hitKarutaMqttPath, JSON.stringify({ userId: this.myId }))
     }
   },
   computed: {
