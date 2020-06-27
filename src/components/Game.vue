@@ -2,6 +2,7 @@
   <div v-if="data">
     <p>ここにデータ表示</p>
     <div class="button" @click="hitKaruta">カルタGET</div>
+    <div>現在のカルタID : {{ targetKarutaId }}</div>
   </div>
   <div v-else>ロード中だよ</div>
 </template>
@@ -13,7 +14,7 @@ export default {
     return {
       data: null,
       karutaMapper: null,
-      targetKarutaId: 1
+      targetKarutaId: null
     }
   },
   created () {
@@ -30,6 +31,7 @@ export default {
         this.karutaMapper = new KarutaMapper(res.karutas)
         this.$mqtt.on('message', this.subscribeMessage)
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
+        this.$mqtt.subscribe(this.targetKarutaMqttPath)
       })
     },
     hitKaruta () {
@@ -52,6 +54,9 @@ export default {
         case this.hitKarutaMqttPath:
           this.hitKarutaFromMqtt(payload.karutaId, payload.userId, payload.timeStamp)
           break
+        case this.targetKarutaMqttPath:
+          this.targetKarutaId = payload.karutaId
+          break
       }
     },
     hitKarutaFromMqtt (karutaId, userId, timeStamp) {
@@ -67,7 +72,10 @@ export default {
       return this.$route.params.user_key
     },
     hitKarutaMqttPath () {
-      return `karuta/${this.gameKey}/karuta_id`
+      return `karuta/${this.gameKey}/hit_karuta`
+    },
+    targetKarutaMqttPath () {
+      return `karuta/${this.gameKey}/new_target_karuta`
     },
     myId () {
       return this.data.users.find(v => v.is_me).id
