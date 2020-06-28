@@ -16,7 +16,7 @@
       </li>
     </ul>
   </div>
-  <div v-else>ロード中だよ</div>
+  <div class="loading" v-else>ロード中だよ</div>
 </template>
 
 <script>
@@ -107,6 +107,10 @@ export default {
 
 <style lang="scss" scoped>
 $target-karuta: #F0697A;
+.loading {
+  text-align: center;
+  margin-top: 30vh;
+}
 .gameUsers {
   &-user {
     display: flex;
