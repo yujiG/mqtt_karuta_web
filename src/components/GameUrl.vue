@@ -1,13 +1,13 @@
 <template>
-  <div class="game">
-    <div class="game-title">karuta</div>
-    <div class="game-urlBox">
+  <div class="gameUrl">
+    <div class="gameUrl-title">karuta</div>
+    <div class="gameUrl-urlBox">
       <i class="fa fa-files-o" />
-      <p class="game-urlBox-url">{{ urlHash ? url : 'ここにURLが表示されます' }}</p>
+      <p class="gameUrl-urlBox-url">{{ urlHash ? url : 'ここにURLが表示されます' }}</p>
     </div>
-    <div class="game-buttons">
-      <div class="game-buttons-item" :class="{ disabled: urlHash }" @click="makeGameUrl">URLを発行</div>
-      <div class="game-buttons-item" :class="{ disabled: !urlHash }" @click="moveToGame">対戦ページに移動</div>
+    <div class="gameUrl-buttons">
+      <div class="gameUrl-buttons-item" :class="{ disabled: urlHash }" @click="makeGameUrl">URLを発行</div>
+      <div class="gameUrl-buttons-item" :class="{ disabled: !urlHash }" @click="moveToGame">対戦ページに移動</div>
     </div>
   </div>
 </template>
@@ -40,7 +40,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.game {
+.gameUrl {
   max-width: 350px;
   margin: 30vh auto 0;
   &-title {
