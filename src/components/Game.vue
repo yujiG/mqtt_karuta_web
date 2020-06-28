@@ -1,12 +1,14 @@
 <template>
   <div v-if="data">
     <game-title />
-    <p>ここにデータ表示</p>
-    <div class="button" @click="hitKaruta">カルタGET</div>
+    <ul class="gameUsers">
+      <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
+        <i class="fa fa-stop" :class="`color-${i % COLOR_SIZE}`" />
+        <p>ID : {{ v.userId }} /</p>
+        <div class="gameUsers-user-point">{{ v.points }}点</div>
+      </li>
+    </ul>
     <div>現在のカルタID : {{ targetKarutaId }}</div>
-    <div v-for="(v, i) in karutaMapper.usersInfo" :key="i">
-      ユーザーID : {{ v.userId }}
-    </div>
   </div>
   <div v-else>ロード中だよ</div>
 </template>
@@ -14,13 +16,15 @@
 <script>
 import GameTitle from '@/components/GameTitle'
 import KarutaMapper from '@/utils/karuta-mapper'
+const COLOR_SIZE = 3
 export default {
   components: { GameTitle },
   data () {
     return {
       data: null,
       karutaMapper: null,
-      targetKarutaId: null
+      targetKarutaId: null,
+      COLOR_SIZE
     }
   },
   created () {
@@ -91,11 +95,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.button {
-  cursor: pointer;
-  border-radius: 2px;
-  margin: 15px 30px;
-  padding: 7px 15px;
-  border: 1px solid $base;
+$user-color0: #CDD2EB;
+$user-color1: #D8EBCD;
+$user-color2: #EBCDCD;
+.gameUsers {
+  &-user {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    .fa {
+      font-size: 10px;
+      line-height: 21px;
+      margin-right: 5px;
+      &.color-0 { color: $user-color0; }
+      &.color-1 { color: $user-color1; }
+      &.color-2 { color: $user-color2; }
+    }
+    &-point {
+      margin-left: 10px;
+      text-align: end;
+      width: 40px;
+    }
+  }
 }
 </style>
