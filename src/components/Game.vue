@@ -1,5 +1,6 @@
 <template>
   <div v-if="data">
+    <game-title />
     <p>ここにデータ表示</p>
     <div class="button" @click="hitKaruta">カルタGET</div>
     <div>現在のカルタID : {{ targetKarutaId }}</div>
@@ -11,8 +12,10 @@
 </template>
 
 <script>
+import GameTitle from '@/components/GameTitle'
 import KarutaMapper from '@/utils/karuta-mapper'
 export default {
+  components: { GameTitle },
   data () {
     return {
       data: null,

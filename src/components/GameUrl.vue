@@ -41,8 +41,7 @@ export default {
 
 <style lang="scss" scoped>
 .gameUrl {
-  max-width: 350px;
-  margin: 30vh auto 0;
+  margin-top: 30vh;
   &-title {
     font-size: 30px;
     font-weight: bold;
