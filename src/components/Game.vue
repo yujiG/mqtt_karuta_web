@@ -3,12 +3,18 @@
     <game-title />
     <ul class="gameUsers">
       <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
-        <i class="fa fa-stop" :class="`color-${i % COLOR_SIZE}`" />
+        <i class="fa fa-stop" :class="userColor(v.userId)" />
         <p>ID : {{ v.userId }} /</p>
         <div class="gameUsers-user-point">{{ v.points }}点</div>
       </li>
     </ul>
-    <div>現在のカルタID : {{ targetKarutaId }}</div>
+    <ul class="karutas">
+      <li class="karutas-item blank" />
+      <li class="karutas-item blank" />
+      <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
+        {{ v.name }}
+      </li>
+    </ul>
   </div>
   <div v-else>ロード中だよ</div>
 </template>
@@ -38,12 +44,17 @@ export default {
     getGameInfo () {
       this.$store.dispatch('getGameInfo', { gameKey: this.gameKey, userKey: this.userkey }).then(res => {
         this.data = res
-        this.karutaMapper = new KarutaMapper(res.karutas)
+        this.karutaMapper = new KarutaMapper(res.karutas, res.users, res.points)
+        this.targetKarutaId = res.game.karuta_id
         this.$mqtt.on('message', this.subscribeMessage)
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
         this.$mqtt.subscribe(this.targetKarutaMqttPath)
         this.publishInitialize()
       })
+    },
+    userColor (userId) {
+      const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
+      return index === -1 ? null : `color-${index}`
     },
     hitKaruta () {
       const postParams = { karutaId: this.targetKarutaId, userKey: this.userkey }
@@ -95,9 +106,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$user-color0: #CDD2EB;
-$user-color1: #D8EBCD;
-$user-color2: #EBCDCD;
+$target-karuta: #F0697A;
 .gameUsers {
   &-user {
     display: flex;
@@ -116,6 +125,32 @@ $user-color2: #EBCDCD;
       text-align: end;
       width: 40px;
     }
+  }
+}
+.karutas {
+  margin-top: 50px;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  border-top: 1px solid $base;
+  border-left: 1px solid $base;
+  &-item {
+    text-align: center;
+    width: calc((100% / 7) - 1px);
+    height: 50px;
+    line-height: 50px;
+    border-right: 1px solid $base;
+    border-bottom: 1px solid $base;
+    &.target {
+      cursor: pointer;
+      color: white;
+      background-color: $target-karuta;
+    }
+    &.color-0 { background-color: $user-color0; }
+    &.color-1 { background-color: $user-color1; }
+    &.color-2 { background-color: $user-color2; }
+    &.blank { background-color: $base-bg; }
   }
 }
 </style>
