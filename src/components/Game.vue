@@ -4,14 +4,14 @@
     <ul class="gameUsers">
       <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
         <i class="fa fa-stop" :class="userColor(v.userId)" />
-        <p>ID : {{ v.userId }} /</p>
+        <p><span :class="{ me: v.userId === myId }">ID : {{ v.userId }}</span> /</p>
         <div class="gameUsers-user-point">{{ v.points }}点</div>
       </li>
     </ul>
     <ul class="karutas">
       <li class="karutas-item blank" />
       <li class="karutas-item blank" />
-      <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
+      <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" @click="hitKaruta(v.karutaId)" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
         {{ v.name }}
       </li>
     </ul>
@@ -56,10 +56,11 @@ export default {
       const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
       return index === -1 ? null : `color-${index}`
     },
-    hitKaruta () {
-      const postParams = { karutaId: this.targetKarutaId, userKey: this.userkey }
+    hitKaruta (id) {
+      if (id !== this.targetKarutaId || this.karutaMapper.isHitted(id)) return
+      const postParams = { karutaId: id, userKey: this.userkey }
       this.$store.dispatch('hitKaruta', postParams)
-      const mqttParams = { karutaId: this.targetKarutaId, userId: this.myId, timeStamp: new Date().getTime() }
+      const mqttParams = { karutaId: id, userId: this.myId, timeStamp: new Date().getTime() }
       this.$mqtt.publish(this.hitKarutaMqttPath, JSON.stringify(mqttParams))
     },
     parseMqttpayload (payloadUint8Array) {
@@ -116,6 +117,9 @@ $target-karuta: #F0697A;
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    .me {
+      color: $target-karuta;
+    }
     .fa {
       font-size: 10px;
       line-height: 21px;
@@ -151,9 +155,9 @@ $target-karuta: #F0697A;
       color: white;
       background-color: $target-karuta;
     }
-    &.color-0 { background-color: $user-color0; }
-    &.color-1 { background-color: $user-color1; }
-    &.color-2 { background-color: $user-color2; }
+    &.color-0 { background-color: $user-color0; color: $base; }
+    &.color-1 { background-color: $user-color1; color: $base; }
+    &.color-2 { background-color: $user-color2; color: $base; }
     &.blank { background-color: $base-bg; }
   }
 }

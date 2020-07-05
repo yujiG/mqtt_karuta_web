@@ -14,6 +14,9 @@ export default class KarutaMapper {
     if (!karuta) return
     karuta.users.push({ userId, timeStamp })
   }
+  isHitted (karutaId) {
+    return this.karutasMinUserId.find(v => v.karutaId === karutaId).userId
+  }
   get usersInfo () {
     return this.userIds.map(id => {
       const karutaIds = this.karutasMinUserId.filter(v => v.userId === id).map(v => v.karutaId)
