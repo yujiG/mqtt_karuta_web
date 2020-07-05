@@ -119,6 +119,7 @@ $target-karuta: #F0697A;
   margin-top: 30vh;
 }
 .gameUsers {
+  margin: 15px 0 30px;
   &-user {
     display: flex;
     justify-content: flex-end;
@@ -142,7 +143,6 @@ $target-karuta: #F0697A;
   }
 }
 .karutas {
-  margin-top: 50px;
   max-height: 360px;
   display: flex;
   flex-direction: column;
