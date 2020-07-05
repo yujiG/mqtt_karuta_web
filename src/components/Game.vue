@@ -1,22 +1,25 @@
 <template>
-  <div v-if="data">
+  <div>
     <game-title />
-    <ul class="gameUsers">
-      <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
-        <i class="fa fa-stop" :class="userColor(v.userId)" />
-        <p><span :class="{ me: v.userId === myId }">ID : {{ v.userId }}</span> /</p>
-        <div class="gameUsers-user-point">{{ v.points }}点</div>
-      </li>
-    </ul>
-    <ul class="karutas">
-      <li class="karutas-item blank" />
-      <li class="karutas-item blank" />
-      <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" @click="hitKaruta(v.karutaId)" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
-        {{ v.name }}
-      </li>
-    </ul>
+    <div v-if="data">
+      <ul class="gameUsers">
+        <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
+          <i class="fa fa-stop" :class="userColor(v.userId)" />
+          <p><span :class="{ me: v.userId === myId }">ID : {{ v.userId }}</span> /</p>
+          <div class="gameUsers-user-point">{{ v.points }}点</div>
+        </li>
+      </ul>
+      <ul class="karutas">
+        <li class="karutas-item blank" />
+        <li class="karutas-item blank" />
+        <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" @click="hitKaruta(v.karutaId)" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
+          {{ v.name }}
+        </li>
+      </ul>
+    </div>
+    <div class="loading" v-else-if="errorMessage">{{ errorMessage }}</div>
+    <div class="loading" v-else>ロード中だよ</div>
   </div>
-  <div class="loading" v-else>ロード中だよ</div>
 </template>
 
 <script>
@@ -30,6 +33,7 @@ export default {
       data: null,
       karutaMapper: null,
       targetKarutaId: null,
+      errorMessage: null,
       COLOR_SIZE
     }
   },
@@ -38,6 +42,8 @@ export default {
     this.$store.dispatch('getUserKey', this.gameKey).then(res => {
       this.$router.replace({ params: { user_key: res.key } })
       this.getGameInfo()
+    }).catch(e => {
+      this.errorMessage = e.response.data.message
     })
   },
   methods: {
