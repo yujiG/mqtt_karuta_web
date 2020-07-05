@@ -1,7 +1,8 @@
 <template>
   <div>
     <game-title />
-    <div v-if="data">
+    <game-result v-if="isFinished" :data="data" :karutaMapper="karutaMapper" />
+    <template v-else-if="data">
       <ul class="gameUsers">
         <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
           <i class="fa fa-stop" :class="userColor(v.userId)" />
@@ -16,7 +17,7 @@
           {{ v.name }}
         </li>
       </ul>
-    </div>
+    </template>
     <div class="loading" v-else-if="errorMessage">{{ errorMessage }}</div>
     <div class="loading" v-else>ロード中だよ</div>
   </div>
@@ -24,16 +25,19 @@
 
 <script>
 import GameTitle from '@/components/GameTitle'
+import GameResult from '@/components/GameResult'
 import KarutaMapper from '@/utils/karuta-mapper'
 const COLOR_SIZE = 3
 export default {
-  components: { GameTitle },
+  components: { GameTitle, GameResult },
   data () {
     return {
       data: null,
       karutaMapper: null,
       targetKarutaId: null,
       errorMessage: null,
+      isLast: false,
+      isFinished: false,
       COLOR_SIZE
     }
   },
@@ -49,9 +53,11 @@ export default {
   methods: {
     getGameInfo () {
       this.$store.dispatch('getGameInfo', { gameKey: this.gameKey, userKey: this.userkey }).then(res => {
+        this.isFinished = res.game.finished
+        this.targetKarutaId = res.game.karuta_id
+        this.isLast = res.game.is_last
         this.data = res
         this.karutaMapper = new KarutaMapper(res.karutas, res.users, res.points)
-        this.targetKarutaId = res.game.karuta_id
         this.$mqtt.on('message', this.subscribeMessage)
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
         this.$mqtt.subscribe(this.targetKarutaMqttPath)
@@ -78,13 +84,15 @@ export default {
     },
     subscribeMessage (path, payloadUint8Array) {
       const payload = this.parseMqttpayload(payloadUint8Array)
-      if (!payload) return console.log('parse Error!') // TODO: ログ出力の内容を調整する
+      if (!payload) return
       switch (path) {
         case this.hitKarutaMqttPath:
           this.karutaMapper.hitKaruta(payload.karutaId, payload.userId, payload.timeStamp)
+          if (this.isLast) this.isFinished = true
           break
         case this.targetKarutaMqttPath:
           this.targetKarutaId = payload.karutaId
+          this.isLast = payload.is_last
           break
       }
     },
@@ -113,7 +121,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$target-karuta: #F0697A;
 .loading {
   text-align: center;
   margin-top: 30vh;
@@ -125,7 +132,7 @@ $target-karuta: #F0697A;
     justify-content: flex-end;
     align-items: center;
     .me {
-      color: $target-karuta;
+      color: $red;
     }
     .fa {
       font-size: 10px;
@@ -159,7 +166,7 @@ $target-karuta: #F0697A;
     &.target {
       cursor: pointer;
       color: white;
-      background-color: $target-karuta;
+      background-color: $red;
     }
     &.color-0 { background-color: $user-color0; color: $base; }
     &.color-1 { background-color: $user-color1; color: $base; }
