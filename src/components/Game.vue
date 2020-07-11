@@ -34,6 +34,7 @@ import GameTitle from '@/components/GameTitle'
 import GameResult from '@/components/GameResult'
 import KarutaMapper from '@/utils/karuta-mapper'
 import { shuffle } from '@/utils/array-actions'
+import resultMessages from '@/resources/result-messages'
 const KARUTAS_CENTER_INDEX = 23
 export default {
   components: { GameTitle, GameResult },
@@ -46,6 +47,9 @@ export default {
       isLast: false,
       isFinished: false,
       karutasIndex: null,
+      goodMessages: [],
+      badMessages: [],
+      hitMessage: null,
       KARUTAS_CENTER_INDEX
     }
   },
@@ -71,6 +75,7 @@ export default {
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
         this.$mqtt.subscribe(this.targetKarutaMqttPath)
         this.publishInitialize()
+        this.messageInitialize()
       })
     },
     userColor (userId) {
@@ -101,6 +106,10 @@ export default {
       switch (path) {
         case this.hitKarutaMqttPath:
           this.karutaMapper.hitKaruta(payload.karutaId, payload.userId, payload.timeStamp)
+          if (payload.karutaId) {
+            const hitMessages = payload.userId === this.myId ? this.goodMessages : this.badMessages
+            this.hitMessage = hitMessages[this.hittedKarutaSize]
+          }
           if (this.isLast) this.isFinished = true
           break
         case this.targetKarutaMqttPath:
@@ -111,6 +120,10 @@ export default {
     },
     publishInitialize () {
       this.$mqtt.publish(this.hitKarutaMqttPath, JSON.stringify({ userId: this.myId }))
+    },
+    messageInitialize () {
+      this.goodMessages = resultMessages.good.pattern_1.concat(shuffle(resultMessages.good.pattern_2))
+      this.badMessages = resultMessages.bad.pattern_1.concat(shuffle(resultMessages.bad.pattern_2))
     }
   },
   computed: {
@@ -138,23 +151,21 @@ export default {
     targetHittedUserId () {
       return this.karutaMapper.karutasMinUserId.find(v => v.karutaId === this.targetKarutaId).userId
     },
-    anyKarutaHitted () {
-      return this.karutaMapper.karutasMinUserId.some(v => v.userId)
+    hittedKarutaSize () {
+      return this.karutaMapper.karutasMinUserId.filter(v => v.userId).length
     },
     message () {
-      if (this.anyKarutaHitted) {
-        if (this.targetHittedUserId === this.myId) {
-          return 'ナイス！'
-        } else if (Number.isInteger(this.targetHittedUserId)) {
-          return 'クソ雑魚！'
-        }
+      if (this.hittedKarutaSize > 0) {
+        return this.hitMessage
       } else {
         return this.startAtText
       }
     },
     startAtText () {
       const date = new Date(this.data.game.start_at)
-      return `カルタ開始は ${date.getHours()}:${date.getMinutes()}`
+      const hour = `${date.getHours()}`.padStart(2, '0')
+      const minute = `${date.getMinutes()}`.padStart(2, '0')
+      return `カルタ開始は ${hour}:${minute}`
     }
   }
 }
@@ -166,8 +177,7 @@ export default {
   margin-top: 30vh;
 }
 .gameMessage {
-  margin-bottom: 15px;
-  height: 22px;
+  min-height: 42px;
 }
 .gameUsers {
   margin: 15px 0;
