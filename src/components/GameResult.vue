@@ -5,7 +5,7 @@
         <div class="gameResult-user-name">
           <p>{{ i + 1 }}位</p>
           <i class="fa fa-stop" :class="userColor(v.userId)" />
-          <p :class="{ me: v.userId === myId }">{{ v.userId }}</p>
+          <p :class="{ me: v.userId === myId }">{{ playerName(v.userId) }}</p>
         </div>
         <div>{{ v.points }}点</div>
       </li>
@@ -24,6 +24,10 @@ export default {
     userColor (userId) {
       const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
       return index === -1 ? null : `color-${index}`
+    },
+    playerName (userId) {
+      const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
+      return index === -1 ? null : `プレイヤー${index + 1}`
     },
     users () {
       return this.karutaMapper.usersInfo.sort((x, y) => y.points - x.points)

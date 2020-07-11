@@ -6,15 +6,21 @@
       <ul class="gameUsers">
         <li class="gameUsers-user" v-for="(v, i) in karutaMapper.usersInfo" :key="i">
           <i class="fa fa-stop" :class="userColor(v.userId)" />
-          <p><span :class="{ me: v.userId === myId }">ID : {{ v.userId }}</span> /</p>
+          <p><span :class="{ me: v.userId === myId }">{{ playerName(v.userId) }}</span> /</p>
           <div class="gameUsers-user-point">{{ v.points }}点</div>
         </li>
       </ul>
+      <div class="gameMessage">{{ message }}</div>
       <ul class="karutas">
         <li class="karutas-item blank" />
-        <li class="karutas-item blank" />
-        <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" @click="hitKaruta(v.karutaId)" v-for="(v, i) in karutaMapper.karutasMinUserId" :key="i">
-          {{ v.name }}
+        <template v-for="(v, i) in karutas">
+          <li class="karutas-item blank" v-if="i === KARUTAS_CENTER_INDEX" :key="i" />
+          <li class="karutas-item" :class="[{ target: v.karutaId === targetKarutaId }, userColor(v.userId)]" @click="hitKaruta(v.karutaId)" :key="i" v-else>
+            {{ v.name }}
+          </li>
+        </template>
+        <li class="karutas-item" :class="[{ target: centerKaruta.karutaId === targetKarutaId }, userColor(centerKaruta.userId)]" @click="hitKaruta(centerKaruta.karutaId)">
+          {{ centerKaruta.name }}
         </li>
       </ul>
     </template>
@@ -27,7 +33,8 @@
 import GameTitle from '@/components/GameTitle'
 import GameResult from '@/components/GameResult'
 import KarutaMapper from '@/utils/karuta-mapper'
-const COLOR_SIZE = 3
+import { shuffle } from '@/utils/array-actions'
+const KARUTAS_CENTER_INDEX = 23
 export default {
   components: { GameTitle, GameResult },
   data () {
@@ -38,7 +45,8 @@ export default {
       errorMessage: null,
       isLast: false,
       isFinished: false,
-      COLOR_SIZE
+      karutasIndex: null,
+      KARUTAS_CENTER_INDEX
     }
   },
   created () {
@@ -58,6 +66,7 @@ export default {
         this.isLast = res.game.is_last
         this.data = res
         this.karutaMapper = new KarutaMapper(res.karutas, res.users, res.points)
+        this.karutasIndex = shuffle([...Array(res.karutas.length).keys()])
         this.$mqtt.on('message', this.subscribeMessage)
         this.$mqtt.subscribe(this.hitKarutaMqttPath)
         this.$mqtt.subscribe(this.targetKarutaMqttPath)
@@ -68,8 +77,12 @@ export default {
       const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
       return index === -1 ? null : `color-${index}`
     },
+    playerName (userId) {
+      const index = this.karutaMapper.usersInfo.findIndex(v => v.userId === userId)
+      return index === -1 ? null : `プレイヤー${index + 1}`
+    },
     hitKaruta (id) {
-      if (id !== this.targetKarutaId || this.karutaMapper.isHitted(id)) return
+      if (id !== this.targetKarutaId || this.targetHittedUserId) return
       const postParams = { karutaId: id, userKey: this.userkey }
       this.$store.dispatch('hitKaruta', postParams)
       const mqttParams = { karutaId: id, userId: this.myId, timeStamp: new Date().getTime() }
@@ -115,6 +128,33 @@ export default {
     },
     myId () {
       return this.data.users.find(v => v.is_me).id
+    },
+    karutas () {
+      return this.karutasIndex.map(i => this.karutaMapper.karutasMinUserId[i])
+    },
+    centerKaruta () {
+      return this.karutaMapper.karutasMinUserId[this.karutasIndex[KARUTAS_CENTER_INDEX]]
+    },
+    targetHittedUserId () {
+      return this.karutaMapper.karutasMinUserId.find(v => v.karutaId === this.targetKarutaId).userId
+    },
+    anyKarutaHitted () {
+      return this.karutaMapper.karutasMinUserId.some(v => v.userId)
+    },
+    message () {
+      if (this.anyKarutaHitted) {
+        if (this.targetHittedUserId === this.myId) {
+          return 'ナイス！'
+        } else if (Number.isInteger(this.targetHittedUserId)) {
+          return 'クソ雑魚！'
+        }
+      } else {
+        return this.startAtText
+      }
+    },
+    startAtText () {
+      const date = new Date(this.data.game.start_at)
+      return `カルタ開始は ${date.getHours()}:${date.getMinutes()}`
     }
   }
 }
@@ -125,8 +165,13 @@ export default {
   text-align: center;
   margin-top: 30vh;
 }
+.gameMessage {
+  margin-bottom: 15px;
+  height: 22px;
+}
 .gameUsers {
-  margin: 15px 0 30px;
+  margin: 15px 0;
+  height: 65px;
   &-user {
     display: flex;
     justify-content: flex-end;
