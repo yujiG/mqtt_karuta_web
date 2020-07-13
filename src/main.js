@@ -6,7 +6,7 @@ import router from './router'
 import store from './vuex/store'
 import VueMqtt from 'vue-mqtt'
 
-Vue.use(VueMqtt, 'ws://127.0.0.1:1884', {clientId: 'WebClient-' + parseInt(Math.random() * 100000)})
+Vue.use(VueMqtt, process.env.MOSQUITTO_SERVER, {clientId: 'WebClient-' + parseInt(Math.random() * 100000)})
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
