@@ -1,9 +1,10 @@
 <template>
   <div class="gameUrl">
     <div class="gameUrl-title">karuta</div>
-    <div class="gameUrl-urlBox">
+    <div class="gameUrl-urlBox" @click="copy">
       <i class="fa fa-files-o" />
       <p class="gameUrl-urlBox-url">{{ urlHash ? url : 'ここにURLが表示されます' }}</p>
+      <div class="gameUrl-urlBox-copied" v-if="copied">copied!!</div>
     </div>
     <div class="gameUrl-buttons">
       <div class="gameUrl-buttons-item" :class="{ disabled: urlHash }" @click="makeGameUrl">URLを発行</div>
@@ -16,7 +17,8 @@
 export default {
   data () {
     return {
-      urlHash: null
+      urlHash: null,
+      copied: false
     }
   },
   computed: {
@@ -34,6 +36,19 @@ export default {
     moveToGame () {
       if (!this.urlHash) return
       this.$router.push({ name: 'Game', params: { game_key: this.urlHash } })
+    },
+    copy () {
+      if (!this.urlHash) return
+      const tempTextArea = document.createElement('textarea')
+      tempTextArea.value = this.url
+      document.body.appendChild(tempTextArea)
+      tempTextArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(tempTextArea)
+      this.copied = true
+      setInterval(() => {
+        this.copied = false
+      }, 2000)
     }
   }
 }
@@ -55,6 +70,7 @@ export default {
     border-radius: 100px;
     display: flex;
     align-items: center;
+    position: relative;
     &-url {
       text-overflow: ellipsis;
       overflow: hidden;
@@ -62,6 +78,12 @@ export default {
     .fa {
       margin: 0 5px 0 5px;
       line-height: 1.7;
+    }
+    &-copied {
+      position: absolute;
+      left: 15px;
+      top: -20px;
+      font-size: 12px;
     }
   }
   &-buttons {
