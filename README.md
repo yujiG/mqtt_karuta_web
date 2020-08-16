@@ -13,8 +13,6 @@
 | ----- | ------ | ----- | ----- |
 | ![image](https://user-images.githubusercontent.com/22848303/90333518-758d3900-e001-11ea-9730-3ef9fdf75f89.png) | ![image](https://user-images.githubusercontent.com/22848303/90333467-eb44d500-e000-11ea-94b0-089d65c87026.png) |  ![image](https://user-images.githubusercontent.com/22848303/90333471-f7c92d80-e000-11ea-8faf-64097f823148.png) | ![image](https://user-images.githubusercontent.com/22848303/90333493-2c3ce980-e001-11ea-8e95-920acd4ea34a.png) | 
 
-# mqttとrailsとvueを使った同期ゲーム
-
 # localhost手順
 1. railsの手順を完了する（https://github.com/yujiG/mqtt_karuta）
 2. yarn install
